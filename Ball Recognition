@@ -1,11 +1,40 @@
-# This code contains basic circle recognisition , needs the change in maximum , minimum radius etc for final testing)
 import cv2
 import numpy as np
 
-
 cap = cv2.VideoCapture(0)
-cap.set(3,160)
-cap.set(4,120)
+cap.set(3, 1000)
+cap.set(4, 1000)
+
+color1 = (161, 90, 149)  # Empty (purple) circle
+color2 = (244, 54, 76)   # Red circle
+color3 = (48, 127, 226)  # Blue circle
+
+def classifyCircles(frame, circles):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    for i in circles[0, :]:
+        x, y, r = i[0], i[1], i[2]
+
+        if 0 <= y < frame.shape[0] and 0 <= x < frame.shape[1]:
+            # Extract the RGB values at the circle's center
+            b, g, r = frame[y, x]
+
+            # Initialize variables before the if statement
+            color_label = "Unknown"
+
+            # Define a threshold for color recognition
+            threshold = 80
+
+            # Classify based on RGB values within a threshold
+            if abs(b - color1[0]) < threshold and abs(g - color1[1]) < threshold and abs(r - color1[2]) < threshold:
+                color_label = 'Empty Ball'
+            elif abs(b - color2[0]) < threshold and abs(g - color2[1]) < threshold and abs(r - color2[2]) < threshold:
+                color_label = 'Blue Team'
+            elif abs(b - color3[0]) < threshold and abs(g - color3[1]) < threshold and abs(r - color3[2]) < threshold:
+                color_label = 'Red Team'
+
+            cv2.circle(frame, (x, y), r, (0, 255, 0), 2)
+            cv2.putText(frame, color_label, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
 
 def getContours(frame):
@@ -15,31 +44,30 @@ def getContours(frame):
     circles = cv2.HoughCircles(
         blurred,
         cv2.HOUGH_GRADIENT,
-        dp=1, # if dp = 1 (same res as image) dp =2 ( half the res of input image )
+        dp=1,
         minDist=50,
-        param1=50, # controls sensitivity for finding edges in the image ( higher value higher selectivity so less circles)
-        param2=30, # vote counting threshold for potential circles ( lower value more circles )
-        minRadius=30,
-        maxRadius=100
+        param1=70,
+        param2=60,
+        minRadius=100,
+        maxRadius=2000
     )
 
     if circles is not None:
         circles = np.uint16(np.around(circles))
-        for i in circles[0, :]:
+        classifyCircles(frame, circles)
+        #for i in circles[0, :]:
+           # cv2.circle(frame, (i[0], i[1]), i[2], (0, 255, 0), 2)
+            #cv2.circle(frame, (i[0], i[1]), 2, (0, 0, 255), 3)
 
-            cv2.circle(frame, (i[0], i[1]), i[2], (0, 255, 0), 2)
-
-            cv2.circle(frame, (i[0], i[1]), 2, (0, 0, 255), 3)
-
-
-
-while True :
+while True:
     ret, frame = cap.read()
 
     getContours(frame)
+    # cv2.imshow("Circles", frame)
     cv2.imshow("Video Input", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 cap.release()
 cv2.destroyAllWindows()
+
