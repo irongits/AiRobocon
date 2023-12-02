@@ -1,3 +1,11 @@
+Update Ball Recognition
+a0a819a
+The code follows as :
+1 : We take the frames from the webCam and send it to getContours function, where we find out the location of the various circles in the frame using HoughCircles function
+2 : The frame along with the array of the data of the circles iss sent to the classifyCircles function
+3: ClassifyCircles first extract the details for each circle , i.e. co-ordiunates for center and radius,
+Next it categorized them in labels as empty , blue or red , and then chalk out the circle while putting a text in it
+
 import cv2
 import numpy as np
 
