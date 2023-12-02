@@ -1,0 +1,45 @@
+# This code contains basic circle recognisition , needs the change in maximum , minimum radius etc for final testing)
+import cv2
+import numpy as np
+
+
+cap = cv2.VideoCapture(0)
+cap.set(3,160)
+cap.set(4,120)
+
+
+def getContours(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    circles = cv2.HoughCircles(
+        blurred,
+        cv2.HOUGH_GRADIENT,
+        dp=1, # if dp = 1 (same res as image) dp =2 ( half the res of input image )
+        minDist=50,
+        param1=50, # controls sensitivity for finding edges in the image ( higher value higher selectivity so less circles)
+        param2=30, # vote counting threshold for potential circles ( lower value more circles )
+        minRadius=30,
+        maxRadius=100
+    )
+
+    if circles is not None:
+        circles = np.uint16(np.around(circles))
+        for i in circles[0, :]:
+
+            cv2.circle(frame, (i[0], i[1]), i[2], (0, 255, 0), 2)
+
+            cv2.circle(frame, (i[0], i[1]), 2, (0, 0, 255), 3)
+
+
+
+while True :
+    ret, frame = cap.read()
+
+    getContours(frame)
+    cv2.imshow("Video Input", frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
